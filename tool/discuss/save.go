@@ -76,10 +76,10 @@ func AnalyseDiscussPageForReplies(htmlContent *http.Response, PostID int) (resul
 		result[Count].AuthorID, _ = strconv.Atoi(strings.Trim(UserCentreURL, "/user"));
 		var ReportID string;
 		Selection.Find("a").Each(func(i int, Selection *goquery.Selection) {
-			if i != 2 {
+			if i != 3 {
 				return ;
 			}
-			//Third
+			//Fourth
 			ReportID, _ = Selection.Attr("data-report-id");
 		});
 		result[Count].ReplyID, _ = strconv.Atoi(ReportID);
