@@ -16,7 +16,7 @@ func TestGetDiscussReply(t *testing.T) {
 	ConfingData.Unmarshal(&Configs)
 	
 	val, _ := GetDiscussReply(1,244341, Configs.Request)
-	fmt.Print(val[0].Content)
+	fmt.Print(val[1].ReplyID)
 }
 
 // func TestGetDiscussTitle(t *testing.T) {
