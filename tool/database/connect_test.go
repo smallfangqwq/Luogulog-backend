@@ -21,7 +21,7 @@ func TestDatabase(t *testing.T) {
 	ConfingData.ReadInConfig()
 	ConfingData.Unmarshal(&Configs)
 	t.Log(Configs.Database.Url)
-	cc, err := ConnectSQL(Configs.Database)
+	cc, err := ConnectDatabase(Configs.Database)
 	if err != nil {
 		t.FailNow()
 	}

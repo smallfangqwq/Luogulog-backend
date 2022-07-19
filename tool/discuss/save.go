@@ -16,7 +16,7 @@ type StructureDiscussReply struct {
 	AuthorName string
 	Content string
 	PostID string
-	SendTime int
+	SendTime int64
 }
 
 type StructureDiscussTitle struct {
@@ -24,9 +24,35 @@ type StructureDiscussTitle struct {
 	AuthorName string
 	Content string
 	PostID string
-	SendTime int
+	SendTime int64
 	Pages int
 	Title string
+}
+
+func AnalyseDiscussTitle(htmlContent *http.Response) (result StructureDiscussTitle, err error) {
+	HtmlDocument, err := goquery.NewDocumentFromReader(htmlContent.Body)
+	if err != nil {
+		return 
+	}
+	Selection := HtmlDocument.Find(".am-comment-meta").First()
+	Vertify, err := Selection.Html() 
+	if Vertify == "" || err != nil {
+		return 
+	}
+	oldT := Selection.Text()
+	regExp, _ := regexp.Compile(`[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}`)
+	sendTime, _ := time.Parse("2006-01-02 15:04", regExp.FindString(oldT))
+	result.SendTime = sendTime.Unix()
+	result.AuthorName = Selection.Find("a").First().Text()
+	AuthorId, _ := Selection.Find("a").First().Attr("href")
+	AuthorId = strings.Trim(AuthorId, "/user")
+	result.AuthorID = AuthorId
+	
+	Selection = HtmlDocument.Find(".am-comment-bd").First()
+	ContentHtmlData, _ := Selection.Html()
+	result.Content = ContentHtmlData
+	err = nil
+	return 
 }
 
 func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussReply, err error) {
@@ -34,9 +60,9 @@ func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussRe
 	HaveData := false
 	HtmlDocument.Find(".am-comment-meta").Each(func(i int, Selection *goquery.Selection) {
 		if i == 0 {
+			HaveData = true
 			return 
 		}
-		HaveData = true
 		AText := Selection.Find("a").First().Text()
 		Count := i - 1
 		result = append(result, StructureDiscussReply{})
@@ -44,7 +70,7 @@ func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussRe
 		var regEXP *regexp.Regexp
 		regEXP, err = regexp.Compile(`[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}`)
 		HereTime, _ := time.Parse("2006-01-02 15:04", regEXP.FindString(Selection.Text()))
-		result[Count].SendTime = int(HereTime.Unix())
+		result[Count].SendTime = HereTime.Unix()
 		result[Count].AuthorID, _ = Selection.Find("a").First().Attr("href")
 		result[Count].AuthorID = strings.Trim(result[Count].AuthorID, "/user")
 	})
@@ -93,3 +119,4 @@ func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (re
 	}
 	return 
 }
+
