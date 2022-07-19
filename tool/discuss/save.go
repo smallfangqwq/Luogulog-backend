@@ -20,7 +20,7 @@ type DiscussReply struct {
 	ReplyID int //unique ID for each Reply given by Luogu, coming from data-report-id attribute of the Report button
 }
 
-type Discuss struct {
+type DiscussOverview struct {
 	AuthorID int
 	AuthorName string
 	Content string
@@ -30,7 +30,7 @@ type Discuss struct {
 	Title string
 }
 
-func AnalyseDiscussPageForOverview(htmlContent *http.Response, PostID int) (result Discuss, err error) {
+func AnalyseDiscussPageForOverview(htmlContent *http.Response, PostID int) (result DiscussOverview, err error) {
 	HtmlDocument, err := goquery.NewDocumentFromReader(htmlContent.Body)
 	if err != nil {
 		return 
@@ -125,6 +125,35 @@ func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (re
 		}
 		result, err = AnalyseDiscussPageForReplies(htmlContent, PostID)
 		if result != nil {
+			return 
+		}
+	}
+	return 
+}
+
+func GetDiscussOverview(Page int, PostID int, htmlConfig declare.ConfigRequest) (result DiscussOverview, err error) {
+	searchURL := "https://www.luogu.com.cn/discuss/" + strconv.Itoa(PostID)
+	req, err := http.NewRequest("GET", searchURL, nil)
+	if err != nil {
+		return 
+	}
+	req.Header.Set("User-Agent", htmlConfig.UA)
+	req.Header.Set("Host", htmlConfig.Host)
+	req.Header.Set("Referer", htmlConfig.Referer)
+	CookieNumber := 0
+	MaxCookieNumber := len(htmlConfig.Cookies)
+	for CookieNumber = 0; CookieNumber < MaxCookieNumber; CookieNumber ++ {
+		req.Header.Set("Cookie", htmlConfig.Cookies[CookieNumber])
+		client := &http.Client{
+			Timeout: time.Second * time.Duration(htmlConfig.TimeOut),
+		}
+		var htmlContent *http.Response;
+		htmlContent, err = client.Do(req)
+		if err != nil {
+			return
+		}
+		result, err = AnalyseDiscussPageForOverview(htmlContent, PostID);
+		if err == nil {
 			return 
 		}
 	}
