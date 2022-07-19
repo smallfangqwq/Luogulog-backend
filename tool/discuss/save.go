@@ -12,11 +12,21 @@ import (
 )
 
 type StructureDiscussReply struct {
-	authorID string
-	authorName string
+	AuthorID string
+	AuthorName string
 	Content string
 	PostID string
 	SendTime int
+}
+
+type StructureDiscussTitle struct {
+	AuthorID string
+	AuthorName string
+	Content string
+	PostID string
+	SendTime int
+	Pages int
+	Title string
 }
 
 func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussReply, err error) {
@@ -30,13 +40,13 @@ func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussRe
 		AText := Selection.Find("a").First().Text()
 		Count := i - 1
 		result = append(result, StructureDiscussReply{})
-		result[Count].authorName = AText
+		result[Count].AuthorName = AText
 		var regEXP *regexp.Regexp
 		regEXP, err = regexp.Compile(`[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}`)
 		HereTime, _ := time.Parse("2006-01-02 15:04", regEXP.FindString(Selection.Text()))
 		result[Count].SendTime = int(HereTime.Unix())
-		result[Count].authorID, _ = Selection.Find("a").First().Attr("href")
-		result[Count].authorID = strings.Trim(result[Count].authorID, "/user")
+		result[Count].AuthorID, _ = Selection.Find("a").First().Attr("href")
+		result[Count].AuthorID = strings.Trim(result[Count].AuthorID, "/user")
 	})
 	if !HaveData {
 		result = nil
