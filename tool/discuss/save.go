@@ -11,7 +11,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-type StructureDiscussReply struct {
+type DiscussReply struct {
 	AuthorID string
 	AuthorName string
 	Content string
@@ -19,7 +19,7 @@ type StructureDiscussReply struct {
 	SendTime int64
 }
 
-type StructureDiscussTitle struct {
+type Discuss struct {
 	AuthorID string
 	AuthorName string
 	Content string
@@ -29,7 +29,7 @@ type StructureDiscussTitle struct {
 	Title string
 }
 
-func AnalyseDiscussTitle(htmlContent *http.Response) (result StructureDiscussTitle, err error) {
+func AnalyseDiscussPageForOverview(htmlContent *http.Response) (result DiscussTitle, err error) {
 	HtmlDocument, err := goquery.NewDocumentFromReader(htmlContent.Body)
 	if err != nil {
 		return 
@@ -55,7 +55,7 @@ func AnalyseDiscussTitle(htmlContent *http.Response) (result StructureDiscussTit
 	return 
 }
 
-func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussReply, err error) {
+func AnalyseDiscussPageForReplies(htmlContent *http.Response) (result []DiscussReply, err error) {
 	HtmlDocument, err := goquery.NewDocumentFromReader(htmlContent.Body)
 	HaveData := false
 	HtmlDocument.Find(".am-comment-meta").Each(func(i int, Selection *goquery.Selection) {
@@ -65,7 +65,7 @@ func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussRe
 		}
 		AText := Selection.Find("a").First().Text()
 		Count := i - 1
-		result = append(result, StructureDiscussReply{})
+		result = append(result, DiscussReply{})
 		result[Count].AuthorName = AText
 		var regEXP *regexp.Regexp
 		regEXP, err = regexp.Compile(`[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}`)
@@ -90,7 +90,7 @@ func AnalyseDiscussPage(htmlContent *http.Response) (result []StructureDiscussRe
 	return 
 }
 
-func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (result []StructureDiscussReply, err error) {
+func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (result []DiscussReply, err error) {
 	searchURL := "https://www.luogu.com.cn/discuss/" + strconv.Itoa(PostID) + "?page=" + strconv.Itoa(Page)
 	result = nil
 	req, err := http.NewRequest("GET", searchURL, nil)
@@ -112,7 +112,7 @@ func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (re
 		if err != nil {
 			return
 		}
-		result, err = AnalyseDiscussPage(htmlContent)
+		result, err = AnalyseDiscussPageForReplies(htmlContent)
 		if result != nil {
 			return 
 		}
