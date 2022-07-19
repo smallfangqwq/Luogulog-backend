@@ -12,24 +12,25 @@ import (
 )
 
 type DiscussReply struct {
-	AuthorID string
+	AuthorID int
 	AuthorName string
 	Content string
-	PostID string
+	PostID int //PostID of discuss
 	SendTime int64
+	ReplyID int //unique ID for each Reply given by Luogu, coming from data-report-id attribute of the Report button
 }
 
 type Discuss struct {
-	AuthorID string
+	AuthorID int
 	AuthorName string
 	Content string
-	PostID string
+	PostID int
 	SendTime int64
 	Pages int
 	Title string
 }
 
-func AnalyseDiscussPageForOverview(htmlContent *http.Response) (result DiscussTitle, err error) {
+func AnalyseDiscussPageForOverview(htmlContent *http.Response, PostID int) (result Discuss, err error) {
 	HtmlDocument, err := goquery.NewDocumentFromReader(htmlContent.Body)
 	if err != nil {
 		return 
@@ -45,17 +46,17 @@ func AnalyseDiscussPageForOverview(htmlContent *http.Response) (result DiscussTi
 	result.SendTime = sendTime.Unix()
 	result.AuthorName = Selection.Find("a").First().Text()
 	AuthorId, _ := Selection.Find("a").First().Attr("href")
-	AuthorId = strings.Trim(AuthorId, "/user")
-	result.AuthorID = AuthorId
-	
+	result.AuthorID, _ = strconv.Atoi( strings.Trim(AuthorId, "/user") )
+
 	Selection = HtmlDocument.Find(".am-comment-bd").First()
 	ContentHtmlData, _ := Selection.Html()
 	result.Content = ContentHtmlData
+	result.PostID = PostID;
 	err = nil
 	return 
 }
 
-func AnalyseDiscussPageForReplies(htmlContent *http.Response) (result []DiscussReply, err error) {
+func AnalyseDiscussPageForReplies(htmlContent *http.Response, PostID int) (result []DiscussReply, err error) {
 	HtmlDocument, err := goquery.NewDocumentFromReader(htmlContent.Body)
 	HaveData := false
 	HtmlDocument.Find(".am-comment-meta").Each(func(i int, Selection *goquery.Selection) {
@@ -71,8 +72,18 @@ func AnalyseDiscussPageForReplies(htmlContent *http.Response) (result []DiscussR
 		regEXP, err = regexp.Compile(`[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}`)
 		HereTime, _ := time.Parse("2006-01-02 15:04", regEXP.FindString(Selection.Text()))
 		result[Count].SendTime = HereTime.Unix()
-		result[Count].AuthorID, _ = Selection.Find("a").First().Attr("href")
-		result[Count].AuthorID = strings.Trim(result[Count].AuthorID, "/user")
+		UserCentreURL, _ := Selection.Find("a").First().Attr("href")
+		result[Count].AuthorID, _ = strconv.Atoi(strings.Trim(UserCentreURL, "/user"));
+		var ReportID string;
+		Selection.Find("a").Each(func(i int, Selection *goquery.Selection) {
+			if i != 2 {
+				return ;
+			}
+			//Third
+			ReportID, _ = Selection.Attr("data-report-id");
+		});
+		result[Count].ReplyID, _ = strconv.Atoi(ReportID);
+		result[Count].PostID = PostID;
 	})
 	if !HaveData {
 		result = nil
@@ -112,11 +123,10 @@ func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (re
 		if err != nil {
 			return
 		}
-		result, err = AnalyseDiscussPageForReplies(htmlContent)
+		result, err = AnalyseDiscussPageForReplies(htmlContent, PostID)
 		if result != nil {
 			return 
 		}
 	}
 	return 
 }
-
