@@ -1,6 +1,6 @@
 //code for docHash
 
-package search;
+package search
 
 //parses the data into blocks of 4 bits, while the maximum considered distance
 //between values would be 16 bytes. Returns a bool array that with a length of 4096
@@ -38,6 +38,6 @@ func DocHash_4_16_4096(data []byte) []bool {
 			id:= (dis<<10) | ((int)(pre[i])<<5) | (int)(pre[i+1+j]);
 			sum[id] = true;
 		}
-		return sum;
 	}
+	return sum;
 }
