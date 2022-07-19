@@ -14,6 +14,7 @@ func TestGetDiscussReply(t *testing.T) {
 	var Configs declare.Config
 	ConfingData.ReadInConfig()
 	ConfingData.Unmarshal(&Configs)
+	
 	val, _ := GetDiscussReply(1,244341, Configs.Request)
 	fmt.Print(val[0].Content)
 }

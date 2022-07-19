@@ -8,6 +8,12 @@ type ConfigRequest struct {
 	TimeOut int
 }
 
+type ConfigDatabase struct {
+	Url string
+	Name string
+}
 type Config struct {
 	Request ConfigRequest
+	Database ConfigDatabase
 }
+
