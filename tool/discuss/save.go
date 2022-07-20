@@ -101,7 +101,7 @@ func AnalyseDiscussPageForReplies(htmlContent *http.Response, PostID int) (resul
 	return 
 }
 
-func GetDiscussReplyOnSinglePage(Page int, PostID int, htmlConfig declare.ConfigRequest) (result []DiscussReply, err error) {
+func GetDiscussRepliesOnSinglePage(Page int, PostID int, htmlConfig declare.ConfigRequest) (result []DiscussReply, err error) {
 	searchURL := "https://www.luogu.com.cn/discuss/" + strconv.Itoa(PostID) + "?page=" + strconv.Itoa(Page)
 	result = nil
 	req, err := http.NewRequest("GET", searchURL, nil)
@@ -158,4 +158,21 @@ func GetDiscussOverview(PostID int, htmlConfig declare.ConfigRequest) (result Di
 		}
 	}
 	return 
+}
+
+func GetDiscussReplies(int BeginPage, int EndPage/*does not count*/, int PostID, htmlConfig declare.ConfigRequest) (result []DiscussReply, err error) {
+	result = make([]DiscussReply, 20);
+	for i:=BeginPage; i<EndPage; i++ {
+		ret, err:= GetDiscussRepliesOnSinglePage(i, PostID, htmlConfig);
+		if ret == nil || err != nil || len(ret) == 0 {
+			return;
+		}
+		result= append(result, ret);
+	}
+	return ;
+}
+
+func GetAllDiscussRepliesSince(int BeginPage, int PostID, htmlConfig declare.ConfigRequest) ([]DiscussReply, error) {
+	//I have no idea why this function exists, but I am just required to write one like this
+	return GetDiscussReplies(BeginPage, (-1)>>1/*max int*/, htmlConfig);
 }
