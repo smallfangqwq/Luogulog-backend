@@ -101,7 +101,7 @@ func AnalyseDiscussPageForReplies(htmlContent *http.Response, PostID int) (resul
 	return 
 }
 
-func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (result []DiscussReply, err error) {
+func GetDiscussReplyOnSinglePage(Page int, PostID int, htmlConfig declare.ConfigRequest) (result []DiscussReply, err error) {
 	searchURL := "https://www.luogu.com.cn/discuss/" + strconv.Itoa(PostID) + "?page=" + strconv.Itoa(Page)
 	result = nil
 	req, err := http.NewRequest("GET", searchURL, nil)
@@ -131,7 +131,7 @@ func GetDiscussReply(Page int, PostID int, htmlConfig declare.ConfigRequest) (re
 	return 
 }
 
-func GetDiscussOverview(Page int, PostID int, htmlConfig declare.ConfigRequest) (result DiscussOverview, err error) {
+func GetDiscussOverview(PostID int, htmlConfig declare.ConfigRequest) (result DiscussOverview, err error) {
 	searchURL := "https://www.luogu.com.cn/discuss/" + strconv.Itoa(PostID)
 	req, err := http.NewRequest("GET", searchURL, nil)
 	if err != nil {
