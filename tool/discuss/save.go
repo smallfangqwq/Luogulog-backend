@@ -160,8 +160,10 @@ func GetDiscussOverview(PostID int, htmlConfig declare.ConfigRequest) (result Di
 	return 
 }
 
-func GetDiscussReplies(int BeginPage, int EndPage/*does not count*/, int PostID, htmlConfig declare.ConfigRequest) (result []DiscussReply, err error) {
-	result = make([]DiscussReply, 20);
+func GetDiscussReplies(int BeginPage, int EndPage/*does not count*/, int PostID, htmlConfig declare.ConfigRequest) (result []DiscussReply, overview DiscussOverview, err error) {
+	result = make([]DiscussReply, 20)[:0];
+	overview, err:= GetDiscussOverview(PostID, htmlConfig);
+	if err != nil {return ;}
 	for i:=BeginPage; i<EndPage; i++ {
 		ret, err:= GetDiscussRepliesOnSinglePage(i, PostID, htmlConfig);
 		if ret == nil || err != nil || len(ret) == 0 {
@@ -172,7 +174,7 @@ func GetDiscussReplies(int BeginPage, int EndPage/*does not count*/, int PostID,
 	return ;
 }
 
-func GetAllDiscussRepliesSince(int BeginPage, int PostID, htmlConfig declare.ConfigRequest) ([]DiscussReply, error) {
+func GetAllDiscussRepliesSince(int BeginPage, int PostID, htmlConfig declare.ConfigRequest) ([]DiscussReply, DiscussOverview, error) {
 	//I have no idea why this function exists, but I am just required to write one like this
 	return GetDiscussReplies(BeginPage, (-1)>>1/*max int*/, htmlConfig);
 }
