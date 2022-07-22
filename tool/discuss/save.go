@@ -160,21 +160,25 @@ func GetDiscussOverview(PostID int, htmlConfig declare.ConfigRequest) (result Di
 	return 
 }
 
-func GetDiscussReplies(int BeginPage, int EndPage/*does not count*/, int PostID, htmlConfig declare.ConfigRequest) (result []DiscussReply, overview DiscussOverview, err error) {
+func GetDiscussReplies(BeginPage int,  EndPage int/*does not count*/, PostID int, htmlConfig declare.ConfigRequest) (result []DiscussReply, overview DiscussOverview, err error) {
+	/*
+		不行，我必须表扬一下刘同学：在过不了编译的情况下还能fix bug? 顶级。
+	*/
 	result = make([]DiscussReply, 20)[:0];
-	overview, err:= GetDiscussOverview(PostID, htmlConfig);
+	overview, err = GetDiscussOverview(PostID, htmlConfig);
 	if err != nil {return ;}
-	for i:=BeginPage; i<EndPage; i++ {
-		ret, err:= GetDiscussRepliesOnSinglePage(i, PostID, htmlConfig);
+	for i := BeginPage; i < EndPage; i++ {
+		var ret []DiscussReply;
+		ret, err = GetDiscussRepliesOnSinglePage(i, PostID, htmlConfig);
 		if ret == nil || err != nil || len(ret) == 0 {
 			return;
 		}
-		result= append(result, ret);
+		result = append(result, ret...);
 	}
 	return ;
 }
 
-func GetAllDiscussRepliesSince(int BeginPage, int PostID, htmlConfig declare.ConfigRequest) ([]DiscussReply, DiscussOverview, error) {
+func GetAllDiscussRepliesSince(BeginPage int, PostID int, htmlConfig declare.ConfigRequest) ([]DiscussReply, DiscussOverview, error) {
 	//I have no idea why this function exists, but I am just required to write one like this
-	return GetDiscussReplies(BeginPage, (-1)>>1/*max int*/, htmlConfig);
+	return GetDiscussReplies(BeginPage, (-1)>>1/*max int*/, PostID, htmlConfig);
 }
